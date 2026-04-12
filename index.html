@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Strategy Hub — 1v1 Spelling Bee</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{background:#060c1a;font-family:'Crimson Text',serif;color:#e8d5a0}
+
+/* ── Screens ─────────────────────────────────────────────── */
+.screen{display:none;width:100vw;height:100vh}
+.screen.active{display:flex}
+#ls{align-items:center;justify-content:center}
+
+/* ── Login ──────────────────────────────────────────────── */
+.lw{display:flex;flex-direction:column;align-items:center;gap:20px;padding:20px}
+.crown{font-size:52px;text-align:center;filter:drop-shadow(0 0 18px rgba(212,160,23,.65));animation:fl 3s ease-in-out infinite}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.gtitle{font-family:'Cinzel',serif;font-size:clamp(22px,5vw,44px);font-weight:900;letter-spacing:.16em;background:linear-gradient(135deg,#b8860b,#f0c040,#ffe680,#b8860b);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:sh 4s ease infinite;text-align:center}
+@keyframes sh{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
+.gsub{font-style:italic;font-size:14px;color:#9080a0;text-align:center;margin-top:2px}
+.lcard{background:rgba(8,14,30,.97);border:1px solid rgba(180,140,50,.28);border-radius:16px;padding:26px;width:min(420px,93vw);display:flex;flex-direction:column;gap:14px;box-shadow:0 0 60px rgba(0,0,0,.75)}
+input[type=text]{width:100%;background:rgba(8,16,40,.85);border:1px solid #1e3a6e;border-radius:7px;color:#e8d5a0;font-family:'Cinzel',serif;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s}
+input[type=text]::placeholder{color:#506080;font-family:'Crimson Text',serif;font-style:italic}
+input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,.2)}
+.lbl{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.14em;color:#7080a0;text-transform:uppercase}
+/* Color picker — 2 colors only */
+.ccs{display:flex;gap:10px}
+.cc{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:10px 8px;border-radius:8px;border:2px solid transparent;transition:all .2s;flex:1}
+.cc:hover{background:rgba(255,255,255,.06)}
+.cc.sel{border-color:var(--c);background:rgba(255,255,255,.09)}
+.csw{width:32px;height:32px;border-radius:50%;background:var(--c);border:2px solid rgba(255,255,255,.22)}
+.cc span{font-family:'Cinzel',serif;font-size:11px;color:#7080a0}
+.rsec{display:flex;gap:8px}.rsec input{flex:1}
+.btn{background:linear-gradient(135deg,#7d5a00,#b8860b);border:1px solid #d4a017;border-radius:7px;color:#050b18;font-family:'Cinzel',serif;font-size:12px;font-weight:700;letter-spacing:.07em;padding:10px 16px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn:hover{background:linear-gradient(135deg,#b8860b,#d4a017);box-shadow:0 0 16px rgba(212,160,23,.4);transform:translateY(-1px)}
+#stat{text-align:center;font-style:italic;color:#b8860b;font-size:13px;min-height:18px}
+
+/* ══════════════════════════════════════════════════════════
+   DESKTOP GAME LAYOUT  (3 columns: 56 | 24 | 20)
+   ══════════════════════════════════════════════════════════ */
+#gs{overflow:hidden;align-items:stretch}
+.gl{display:grid;grid-template-columns:56fr 24fr 20fr;width:100%;height:100vh;overflow:hidden;align-items:stretch}
+
+/* ── Game column ── */
+.game-col{display:flex;flex-direction:column;background:rgba(6,10,22,.55);padding:8px 6px 6px;gap:6px;height:100vh;overflow:hidden}
+
+/* Profile header */
+.profile-row{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:6px;padding:2px 4px;background:rgba(6,10,22,.9);border-radius:10px}
+.pcard{display:flex;flex-direction:column;align-items:center;gap:3px}
+.profile-pic{width:44px;height:44px;border-radius:50%;border:2.5px solid rgba(255,255,255,.15);background:rgba(20,30,60,.6);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;transition:border-color .3s,box-shadow .3s}
+.profile-pic img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.profile-pic.me{border-color:#22c55e;box-shadow:0 0 10px rgba(34,197,94,.4)}
+.profile-pic.opp{border-color:#ef4444;box-shadow:0 0 10px rgba(239,68,68,.3)}
+.profile-name{font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:#c0c8d8;letter-spacing:.05em;white-space:nowrap;max-width:70px;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.profile-name.me{color:#22c55e}
+.profile-name.opp{color:#ef4444}
+.profile-center{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
+#td{font-family:'Cinzel',serif;font-size:24px;font-weight:900;letter-spacing:.18em;color:#ffe680;text-align:center;text-shadow:0 0 20px rgba(255,200,0,.3)}
+#td.urgent{color:#e74c3c;animation:pulse-t .6s ease-in-out infinite}
+@keyframes pulse-t{0%,100%{opacity:1}50%{opacity:.5}}
+.ctrls{display:flex;align-items:center;gap:5px;flex-wrap:wrap;justify-content:center}
+.rotbtn{background:rgba(180,140,50,.1);border:1px solid rgba(180,140,50,.3);border-radius:7px;color:#d4a017;font-family:'Cinzel',serif;font-size:10px;padding:4px 9px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.rotbtn:hover{background:rgba(180,140,50,.22);color:#ffe680}
+.actbtn{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.32);border-radius:6px;color:#e74c3c;font-family:'Cinzel',serif;font-size:10px;padding:4px 9px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.actbtn:hover{background:rgba(231,76,60,.26)}
+.drawbtn{background:rgba(80,160,255,.09);border:1px solid rgba(80,160,255,.32);border-radius:6px;color:#60a8ff;font-family:'Cinzel',serif;font-size:10px;padding:4px 9px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.drawbtn:hover{background:rgba(80,160,255,.22)}
+.rid-tag{font-family:'Cinzel',serif;font-size:9px;color:#506080;text-align:center}.rid-tag span{color:#b8860b;font-weight:700}
+
+/* Board + bars */
+.board-and-bars{display:flex;align-items:stretch;justify-content:center;gap:12px;flex:1;min-height:0;padding:0 4px;overflow:visible}
+.board-outer{position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+#gc{display:block;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+
+/* Vertical bar (one per player) */
+.vbar-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;width:40px;flex-shrink:0;padding:4px 0}
+.vbar-pic{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.15);background:rgba(20,30,60,.6);display:flex;align-items:center;justify-content:center;font-size:12px;overflow:hidden}
+.vbar-pic.me{border-color:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.4)}
+.vbar-pic.opp{border-color:#ef4444;box-shadow:0 0 6px rgba(239,68,68,.35)}
+.vbar-count{font-family:'Cinzel',serif;font-size:14px;font-weight:900;min-height:18px;text-align:center}
+.vbar-count.me{color:#22c55e}.vbar-count.opp{color:#ef4444}
+.vbar-track{flex:1;width:14px;background:rgba(255,255,255,.07);border-radius:7px;overflow:hidden;position:relative;min-height:80px}
+.vbar-fill{position:absolute;bottom:0;left:0;right:0;border-radius:7px;transition:height .6s cubic-bezier(.4,0,.2,1)}
+.vbar-fill.me{background:linear-gradient(to top,#15803d,#22c55e)}
+.vbar-fill.opp{background:linear-gradient(to top,#b91c1c,#ef4444)}
+.vbar-name{font-family:'Cinzel',serif;font-size:8px;font-weight:700;letter-spacing:.06em;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40px}
+.vbar-name.me{color:#22c55e}.vbar-name.opp{color:#ef4444}
+
+/* Word input */
+.game-bottom{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;padding:0 4px 4px}
+.bee-input-wrap{display:flex;gap:6px;align-items:center;width:100%;max-width:480px}
+#bee-input{flex:1;background:rgba(8,16,40,.85);border:1px solid #1e3a6e;border-radius:8px;color:#e8d5a0;font-family:'Cinzel',serif;font-size:15px;font-weight:700;letter-spacing:.18em;padding:9px 14px;outline:none;text-transform:uppercase;transition:border-color .2s;text-align:center;cursor:default;user-select:none;-webkit-user-select:none;min-height:42px;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap}
+#bee-input.has-text{border-color:rgba(180,140,50,.4)}
+#bee-input.disabled{opacity:.35}
+#bee-input .cursor{display:inline-block;width:2px;height:1.1em;background:#b8860b;vertical-align:middle;margin-left:1px;animation:blink .9s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+#bee-input .placeholder{color:#506080;font-family:'Crimson Text',serif;font-style:italic;font-weight:400;font-size:13px;letter-spacing:0}
+.wbtn-sub{background:linear-gradient(135deg,#7d5a00,#b8860b);border:1px solid #d4a017;border-radius:8px;color:#050b18;font-family:'Cinzel',serif;font-size:11px;font-weight:700;padding:9px 13px;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.wbtn-sub:disabled{opacity:.3;cursor:default}
+.wbtn-clr{background:rgba(180,140,50,.1);border:1px solid rgba(180,140,50,.28);border-radius:8px;color:#d4a017;font-size:14px;width:36px;min-width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.wbtn-clr:disabled{opacity:.3;cursor:default}
+.sel-info{font-family:'Cinzel',serif;font-size:10px;color:#506080;min-height:13px;text-align:center;letter-spacing:.05em;flex-shrink:0}
+
+/* ── Chat+Words column ── */
+.chat-col{display:flex;flex-direction:column;overflow:hidden;border-left:1px solid rgba(180,140,50,.14);background:rgba(4,9,20,.97);height:100vh}
+.ph{display:flex;align-items:center;gap:7px;padding:10px 11px;background:rgba(180,140,50,.07);border-bottom:1px solid rgba(180,140,50,.13);font-family:'Cinzel',serif;font-size:10px;letter-spacing:.13em;font-weight:700;color:#d4a017;text-transform:uppercase;flex-shrink:0}
+.chat-tabs{display:flex;flex-shrink:0;border-bottom:1px solid rgba(180,140,50,.14)}
+.chat-tab{flex:1;font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:.08em;padding:7px 4px;text-align:center;color:#506080;cursor:pointer;border:none;border-bottom:2px solid transparent;background:transparent;transition:color .15s,border-color .15s}
+.chat-tab.active{color:#d4a017;border-bottom-color:#b8860b}
+.chat-panel{display:none;flex:1;flex-direction:column;min-height:0;overflow:hidden}
+.chat-panel.active{display:flex}
+.cm{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:5px;min-height:0}
+.cm::-webkit-scrollbar{width:3px}.cm::-webkit-scrollbar-thumb{background:#1e3a6e;border-radius:2px}
+.msg{display:flex;flex-direction:column;gap:2px;padding:5px 8px;border-radius:7px;animation:fu .2s ease;max-width:96%}
+@keyframes fu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.msg.me{background:rgba(120,85,5,.92);align-self:flex-end}
+.msg.ot{background:rgba(8,16,44,.92);align-self:flex-start}
+.msg.sy{background:rgba(6,12,26,.80);align-self:center;text-align:center;border-radius:5px;padding:2px 7px}
+.ma{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.07em;font-weight:700}
+.ma.p1{color:#3b82f6}.ma.p2{color:#f97316}.ma.system{color:#506080}
+.mt{font-size:12px;color:#e8d5a0;line-height:1.4;word-break:break-word}
+.msg.sy .mt{font-size:10px;color:#506080;font-style:italic}
+.cir{display:flex;gap:5px;padding:7px 8px;border-top:1px solid rgba(180,140,50,.2);flex-shrink:0;background:rgba(4,8,20,.82)}
+.cir input{flex:1;font-size:12px;padding:6px 9px}
+.sb{background:rgba(180,140,50,.12);border:1px solid #6b3d10;border-radius:6px;color:#d4a017;font-size:13px;width:30px;min-width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.sb:hover{background:rgba(180,140,50,.26);color:#ffe680}
+.words-section{border-top:1px solid rgba(180,140,50,.14);padding:8px;flex:1;min-height:0;overflow-y:auto}
+.words-section::-webkit-scrollbar{width:3px}.words-section::-webkit-scrollbar-thumb{background:#1e3a6e;border-radius:2px}
+.stl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.13em;color:#506080;text-transform:uppercase;display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.word-pill{font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:100px;white-space:nowrap}
+.word-pill.p1{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.35);color:#93c5fd}
+.word-pill.p2{background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.35);color:#fdba74}
+
+/* ── Ad column ── */
+.ad-col{display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;border-left:1px solid rgba(180,140,50,.1);background:rgba(4,8,18,.8);padding:12px 8px}
+.ad-placeholder{width:100%;flex:1;max-height:600px;border:1px dashed rgba(180,140,50,.2);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(180,140,50,.03)}
+.ad-placeholder .ad-icon{font-size:28px;opacity:.2}
+.ad-placeholder span{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#1e2e44}
+
+/* ── Notifications ── */
+#board-notif{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.85);background:rgba(6,12,26,.96);border:2px solid rgba(180,140,50,.6);border-radius:14px;padding:18px 28px;text-align:center;pointer-events:none;z-index:9999;opacity:0;transition:opacity .35s,transform .35s;min-width:240px;max-width:90vw;backdrop-filter:blur(12px)}
+#board-notif.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#board-notif .bn-title{font-family:'Cinzel',serif;font-size:18px;font-weight:700;letter-spacing:.12em;color:#ffe680;margin-bottom:6px;text-shadow:0 0 12px rgba(255,200,0,.5)}
+#board-notif .bn-sub{font-family:'Cinzel',serif;font-size:13px;color:#c8dde8;letter-spacing:.07em;line-height:1.5}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(10,22,40,.97);border:1px solid rgba(180,140,50,.4);border-radius:8px;color:#e8d5a0;font-family:'Cinzel',serif;font-size:12px;padding:10px 18px;opacity:0;transition:all .3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.vote-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center}
+.vote-box{background:rgba(8,14,30,.98);border:1px solid rgba(180,140,50,.3);border-radius:14px;padding:24px 32px;text-align:center;max-width:340px}
+.vote-box h3{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.1em;color:#d4a017;margin-bottom:10px}
+.vote-box p{font-size:13px;color:#9090a0;margin-bottom:16px}
+.vote-btns{display:flex;gap:10px;justify-content:center}
+.rvbtn{padding:7px 20px;border-radius:6px;font-size:12px;font-family:'Cinzel',serif;cursor:pointer;border:1px solid;transition:all .15s}
+.rvbtn.yes{background:rgba(39,174,96,.18);border-color:#27ae60;color:#2ecc71}
+.rvbtn.yes:hover{background:rgba(39,174,96,.35)}
+.rvbtn.no{background:rgba(192,57,43,.18);border-color:#c0392b;color:#e74c3c}
+.rvbtn.no:hover{background:rgba(192,57,43,.35)}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE LAYOUT  (single column, 6-row grid)
+   ══════════════════════════════════════════════════════════ */
+@media(max-width:640px){
+  html,body{overflow:hidden;height:100dvh;touch-action:manipulation}
+  #gs{overflow:hidden!important}
+  .gl{display:block!important;position:relative;width:100vw;height:100dvh}
+  .chat-col{display:none!important}
+  .ad-col{display:none!important}
+  .game-col{
+    position:absolute!important;top:0;left:0;right:0;bottom:0;
+    overflow:hidden!important;padding:0!important;gap:0!important;
+    display:grid!important;
+    grid-template-rows:auto auto 1fr auto minmax(60px,12dvh) 20dvh!important;
+    background:#060c1a!important;height:100dvh!important;
+  }
+  /* Row 1: profile */
+  .profile-row{padding:6px 10px 4px!important;border-radius:0!important;border-bottom:1px solid rgba(180,140,50,.12)!important}
+  .profile-pic{width:32px!important;height:32px!important;font-size:14px!important}
+  .profile-name{font-size:9px!important;max-width:55px!important}
+  #td{font-size:18px!important}
+  .ctrls{gap:3px!important}
+  .rotbtn,.actbtn,.drawbtn{font-size:8px!important;padding:3px 7px!important}
+  /* Row 2: horizontal score bars */
+  #mob-hbars{display:flex!important;align-items:center;gap:6px;padding:5px 10px;background:rgba(4,8,18,.9);border-bottom:1px solid rgba(180,140,50,.1)}
+  .mob-hbar-team{display:flex;align-items:center;gap:5px;flex:1}
+  .mob-hbar-team.opp{flex-direction:row-reverse}
+  .mob-hbar-pic{width:22px;height:22px;border-radius:50%;border:1.5px solid;display:flex;align-items:center;justify-content:center;font-size:10px;overflow:hidden;background:rgba(20,30,60,.7)}
+  .mob-hbar-pic.me{border-color:#22c55e}
+  .mob-hbar-pic.opp{border-color:#ef4444}
+  .mob-hbar-track{flex:1;height:9px;background:rgba(255,255,255,.07);border-radius:5px;overflow:hidden;position:relative}
+  .mob-hbar-fill{position:absolute;top:0;bottom:0;border-radius:5px;transition:width .6s ease}
+  .mob-hbar-fill.me{left:0;background:linear-gradient(90deg,#15803d,#22c55e)}
+  .mob-hbar-fill.opp{right:0;background:linear-gradient(90deg,#ef4444,#b91c1c)}
+  .mob-hbar-count{font-family:'Cinzel',serif;font-size:12px;font-weight:900;min-width:20px;text-align:center}
+  .mob-hbar-count.me{color:#22c55e}.mob-hbar-count.opp{color:#ef4444}
+  .mob-hbar-vs{font-family:'Cinzel',serif;font-size:10px;color:#3a4a60;font-weight:700}
+  /* Row 3: board */
+  .board-and-bars{display:flex!important;align-items:center!important;justify-content:center!important;padding:4px!important;overflow:hidden!important;min-height:0!important}
+  .vbar-wrap{display:none!important}
+  /* Row 4: input */
+  .game-bottom{padding:5px 8px!important;gap:4px!important;background:rgba(4,8,18,.9)!important;border-top:1px solid rgba(180,140,50,.12)!important;flex-shrink:0!important}
+  .bee-input-wrap{gap:4px!important;max-width:100%!important}
+  #bee-input{font-size:14px!important;padding:7px 10px!important;letter-spacing:.1em!important;min-height:36px!important}
+  .wbtn-sub{font-size:10px!important;padding:7px 11px!important}
+  .wbtn-clr{width:30px!important;min-width:30px!important;height:30px!important}
+  .sel-info{font-size:9px!important}
+  /* Row 5: words found */
+  #mob-words-found{display:block!important;padding:5px 10px 4px;background:rgba(4,8,18,.85);border-top:1px solid rgba(180,140,50,.1);overflow-y:auto;min-height:0}
+  #mob-words-found::-webkit-scrollbar{width:2px}
+  #mob-words-found::-webkit-scrollbar-thumb{background:#1e3a6e;border-radius:1px}
+  /* Row 6: ad */
+  #mob-ad{display:flex!important;background:rgba(4,8,18,.95);border-top:1px solid rgba(180,140,50,.15);align-items:center;justify-content:center;flex-direction:column;gap:4px}
+  #mob-ad span{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#1e2e44}
+  /* Chat button inside words row */
+  #mob-chat-btn{display:flex!important;width:30px;height:30px;border-radius:8px;background:rgba(180,140,50,.15);border:1px solid rgba(180,140,50,.35);color:#d4a017;font-size:15px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+  #mob-chat-btn:active{background:rgba(180,140,50,.3)}
+  /* Floating chat overlay — above ad, never touches it */
+  #mob-chat-overlay{position:fixed;bottom:20dvh;left:0;right:0;height:52dvh;max-height:52dvh;background:rgba(6,12,28,.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(180,140,50,.3);z-index:250;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);pointer-events:none}
+  #mob-chat-overlay.open{transform:translateY(0);pointer-events:all}
+  .mob-chat-handle{text-align:center;padding:8px 0 4px;cursor:pointer;flex-shrink:0;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.1em;color:#d4a017;text-shadow:0 1px 6px rgba(0,0,0,.9)}
+  .mob-chat-handle::before{content:'';display:block;margin:0 auto 6px;width:28px;height:3px;border-radius:2px;background:rgba(180,140,50,.45)}
+  .mob-chat-overlay-tabs{display:flex;flex-shrink:0;border-bottom:1px solid rgba(180,140,50,.18)}
+  .mob-chat-tab{flex:1;font-family:'Cinzel',serif;font-size:10px;font-weight:700;padding:7px 4px 5px;text-align:center;color:#8090a8;cursor:pointer;border:none;border-bottom:2px solid transparent;background:transparent;transition:color .15s,border-color .15s}
+  .mob-chat-tab.active{color:#ffe080;border-bottom-color:#d4a017}
+  .mob-chat-panel{display:none;flex:1;flex-direction:column;min-height:0;background:transparent;overflow:hidden}
+  .mob-chat-panel.active{display:flex}
+  .mob-chat-panel .cir{background:rgba(4,8,20,.75)}
+}
+@media(min-width:641px){
+  #mob-hbars{display:none!important}
+  #mob-words-found{display:none!important}
+  #mob-ad{display:none!important}
+  #mob-chat-btn{display:none!important}
+  #mob-chat-overlay{display:none!important}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ── Login ─────────────────────────────────────────────── -->
+<div id="ls" class="screen active">
+  <div class="lw">
+    <div>
+      <div class="crown">🐝</div>
+      <h1 class="gtitle">STRATEGY HUB</h1>
+      <p class="gsub">1v1 Spelling Bee &middot; 8 Minutes &middot; One Hive</p>
+    </div>
+    <div class="lcard">
+      <input type="text" id="ni" placeholder="Your name…" maxlength="20"/>
+      <div class="lbl">Choose your colour</div>
+      <div class="ccs">
+        <div class="cc" data-color="p1" style="--c:#3b82f6">
+          <div class="csw"></div><span>Sapphire</span>
+        </div>
+        <div class="cc" data-color="p2" style="--c:#f97316">
+          <div class="csw"></div><span>Ember</span>
+        </div>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:10px;color:#507090;line-height:1.5;text-align:center;padding:2px 0">
+        🔑 Every word must include the <em>center letter</em>.<br>8 minutes · min 3 letters · most words wins!
+      </div>
+      <div class="rsec">
+        <input type="text" id="ri" placeholder="Room ID (blank = create new)"/>
+        <button id="jb" class="btn">Enter Hive</button>
+      </div>
+      <div id="stat">Enter your name and join!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Game ──────────────────────────────────────────────── -->
+<div id="gs" class="screen">
+  <div class="gl">
+
+    <!-- ── GAME COLUMN (56%) ── -->
+    <div class="game-col" id="center-col">
+
+      <!-- Profile row: P1 left | timer center | P2 right -->
+      <div class="profile-row">
+        <div class="pcard">
+          <div class="profile-pic" id="prof-p1">👤</div>
+          <span class="profile-name" id="pname-p1">Sapphire</span>
+        </div>
+
+        <div class="profile-center">
+          <div id="td">8:00</div>
+          <div class="ctrls">
+            <button class="rotbtn" id="shufflebtn">🔀</button>
+            <button class="rotbtn" id="themebtn">🎨</button>
+            <button class="actbtn" id="resbtn">⚑ Resign</button>
+            <button class="drawbtn" id="drawbtn">🤝 Draw</button>
+          </div>
+          <div class="rid-tag">Room: <span id="rs">—</span></div>
+        </div>
+
+        <div class="pcard">
+          <div class="profile-pic" id="prof-p2">👤</div>
+          <span class="profile-name" id="pname-p2">Ember</span>
+        </div>
+      </div>
+
+      <!-- Mobile row 2: horizontal score bars -->
+      <div id="mob-hbars">
+        <div class="mob-hbar-team">
+          <div class="mob-hbar-pic me" id="mob-pic-p1">👤</div>
+          <div class="mob-hbar-track"><div class="mob-hbar-fill me" id="mob-fill-p1" style="width:0%"></div></div>
+          <div class="mob-hbar-count me" id="mob-count-p1">0</div>
+        </div>
+        <div class="mob-hbar-vs">VS</div>
+        <div class="mob-hbar-team opp">
+          <div class="mob-hbar-pic opp" id="mob-pic-p2">👤</div>
+          <div class="mob-hbar-track"><div class="mob-hbar-fill opp" id="mob-fill-p2" style="width:0%"></div></div>
+          <div class="mob-hbar-count opp" id="mob-count-p2">0</div>
+        </div>
+      </div>
+
+      <!-- Board + vertical bars -->
+      <div class="board-and-bars">
+        <!-- P1 bar -->
+        <div class="vbar-wrap" id="vbar-p1">
+          <div class="vbar-pic me" id="vbar-pic-p1">👤</div>
+          <div class="vbar-count me" id="vbar-count-p1">0</div>
+          <div class="vbar-track"><div class="vbar-fill me" id="vbar-fill-p1" style="height:0%"></div></div>
+          <div class="vbar-name me" id="vbar-name-p1">You</div>
+        </div>
+
+        <!-- Ring board -->
+        <div class="board-outer">
+          <canvas id="gc" width="340" height="340"></canvas>
+          <div id="board-notif"><div class="bn-title" id="bn-title"></div><div class="bn-sub" id="bn-sub"></div></div>
+        </div>
+
+        <!-- P2 bar -->
+        <div class="vbar-wrap" id="vbar-p2">
+          <div class="vbar-pic opp" id="vbar-pic-p2">👤</div>
+          <div class="vbar-count opp" id="vbar-count-p2">0</div>
+          <div class="vbar-track"><div class="vbar-fill opp" id="vbar-fill-p2" style="height:0%"></div></div>
+          <div class="vbar-name opp" id="vbar-name-p2">Opp</div>
+        </div>
+      </div>
+
+      <!-- Word input -->
+      <div class="game-bottom">
+        <div class="bee-input-wrap">
+          <div id="bee-input" role="textbox" tabindex="-1"></div>
+          <button class="wbtn-sub" id="sub-btn">ENTER</button>
+          <button class="wbtn-clr" id="clr-btn">✕</button>
+        </div>
+        <div class="sel-info" id="sel-info">Click letters · center letter required · min 3 letters</div>
+      </div>
+
+      <!-- Mobile row 5: words found -->
+      <div id="mob-words-found">
+        <div class="stl" style="margin-bottom:4px">
+          🐝 My Words
+          <span id="mob-wf-count" style="background:rgba(180,140,50,.18);border-radius:100px;padding:1px 6px;color:#d4a017;font-size:9px">0</span>
+          <span style="flex:1"></span>
+          <button id="mob-chat-btn">💬</button>
+        </div>
+        <div id="mob-wf-list" style="display:flex;flex-wrap:wrap;gap:3px"></div>
+      </div>
+
+      <!-- Mobile row 6: ad -->
+      <div id="mob-ad">
+        <div style="font-size:22px;opacity:.18">📢</div>
+        <span>Advertisement</span>
+      </div>
+
+    </div>
+
+    <!-- ── CHAT + WORDS COLUMN (24%) ── -->
+    <div class="chat-col">
+      <div class="ph">💬 <span>CHAT</span></div>
+      <div class="chat-tabs">
+        <button class="chat-tab active" data-panel="pub">📢 Public</button>
+      </div>
+      <div class="chat-panel active" id="chat-pub">
+        <div id="pcm" class="cm"></div>
+        <div class="cir">
+          <input type="text" id="pci" placeholder="Message…" maxlength="200"/>
+          <button id="psb" class="sb">➤</button>
+        </div>
+      </div>
+      <!-- Words found -->
+      <div class="words-section">
+        <div class="stl">
+          My Words
+          <span id="my-words-count" style="background:rgba(180,140,50,.18);border-radius:100px;padding:1px 6px;color:#d4a017;font-size:9px">0</span>
+        </div>
+        <div id="my-words-list" style="display:flex;flex-wrap:wrap;gap:3px;padding-top:4px"></div>
+      </div>
+    </div>
+
+    <!-- ── AD COLUMN (20%) ── -->
+    <div class="ad-col">
+      <div class="ad-placeholder">
+        <div class="ad-icon">📢</div>
+        <span>Advertisement</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Mobile floating chat overlay -->
+<div id="mob-chat-overlay" style="display:none">
+  <div class="mob-chat-handle" id="mob-chat-handle">💬 CHAT</div>
+  <div class="mob-chat-overlay-tabs">
+    <button class="mob-chat-tab active" data-panel="pub">📢 Chat</button>
+  </div>
+  <div class="mob-chat-panel active" id="mob-cpub">
+    <div id="mob-pcm" class="cm"></div>
+    <div class="cir">
+      <input type="text" id="mob-pci" placeholder="Message…" maxlength="200"/>
+      <button id="mob-psb" class="sb">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- Draw overlay -->
+<div id="vote-overlay" class="vote-overlay" style="display:none">
+  <div class="vote-box">
+    <h3>DRAW PROPOSED</h3>
+    <p>Your opponent proposes a draw. Accept?</p>
+    <div class="vote-btns">
+      <button class="rvbtn yes" id="vote-yes">✓ Accept</button>
+      <button class="rvbtn no" id="vote-no">✗ Decline</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getDatabase,ref,set,get,push,onValue,update,onDisconnect}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB={
+  apiKey:"AIzaSyBapLAgSJg1hzy6mAPj7KgEg9ey7vesrtU",
+  authDomain:"board-puzzle-games.firebaseapp.com",
+  databaseURL:"https://board-puzzle-games-default-rtdb.firebaseio.com",
+  projectId:"board-puzzle-games",
+  storageBucket:"board-puzzle-games.firebasestorage.app",
+  messagingSenderId:"543242357628",
+  appId:"1:543242357628:web:b29225610d8962776bf2f9"
+};
+const app=initializeApp(FB);
+const db=getDatabase(app);
+
+// ── Constants ──────────────────────────────────────────────
+const PLAYERS=['p1','p2'];
+const PM={
+  p1:{label:'Sapphire',dot:'#3b82f6',chatClass:'p1'},
+  p2:{label:'Ember',   dot:'#f97316',chatClass:'p2'},
+};
+const GAME_DURATION=8*60*1000;
+
+// ── Board themes ───────────────────────────────────────────
+const THEMES=[
+  {name:'Pearl',    bg:'#f5f4f0',ringBg:'#e8e8e8',ringStroke:'#c8c0b0',ringStrokeW:2,dotFill:'#ffffff',dotHov:'#dde8ff',dotStroke:'rgba(140,130,110,.45)',letterColor:'#14203a',centerFill:'#f47c00',centerHov:'#ff9520',centerStroke:'rgba(0,0,0,.18)',centerLetterColor:'#ffffff',dark:false},
+  {name:'Midnight', bg:'#0c1220',ringBg:'#141e30',ringStroke:'rgba(60,100,180,.5)',ringStrokeW:1.5,dotFill:'#1a2840',dotHov:'#243354',dotStroke:'rgba(60,100,180,.4)',letterColor:'#b8cce8',centerFill:'#e06a00',centerHov:'#f07a10',centerStroke:'rgba(0,0,0,.35)',centerLetterColor:'#ffffff',dark:true},
+  {name:'Parchment',bg:'#f0e6cc',ringBg:'#e8d8b0',ringStroke:'rgba(105,75,40,.4)',ringStrokeW:2,dotFill:'#fdf4e4',dotHov:'#ece0c8',dotStroke:'rgba(105,75,40,.35)',letterColor:'#32200a',centerFill:'#e05f00',centerHov:'#f07010',centerStroke:'rgba(0,0,0,.15)',centerLetterColor:'#ffffff',dark:false},
+];
+
+// ── Letter sets ────────────────────────────────────────────
+const LETTER_SETS=[
+  {c:'A',r:['P','L','T','E','R','N','S']},{c:'E',r:['A','G','R','N','T','S','L']},
+  {c:'I',r:['N','G','H','T','L','S','E']},{c:'O',r:['W','R','D','S','H','E','N']},
+  {c:'U',r:['B','T','R','N','S','E','L']},{c:'T',r:['A','I','E','R','S','N','G']},
+  {c:'R',r:['A','I','E','N','T','S','G']},{c:'A',r:['M','K','E','R','S','T','N']},
+  {c:'E',r:['L','A','V','S','T','R','N']},{c:'O',r:['N','C','E','R','S','T','L']},
+  {c:'A',r:['B','L','C','K','S','E','T']},{c:'I',r:['D','V','R','E','S','N','G']},
+  {c:'E',r:['P','R','A','S','T','N','D']},{c:'A',r:['H','W','T','E','R','S','N']},
+  {c:'O',r:['F','L','W','E','R','S','T']},{c:'U',r:['F','L','T','E','R','S','N']},
+  {c:'I',r:['M','L','T','E','R','S','N']},{c:'A',r:['C','L','T','E','R','S','N']},
+  {c:'E',r:['B','R','T','A','S','N','D']},{c:'O',r:['B','L','T','A','S','E','N']},
+  {c:'U',r:['M','S','T','A','E','N','R']},{c:'A',r:['G','R','T','E','N','S','D']},
+  {c:'E',r:['W','R','T','A','S','N','D']},{c:'A',r:['D','L','T','E','R','S','N']},
+  {c:'O',r:['P','L','T','A','S','E','N']},{c:'I',r:['C','L','T','E','R','S','N']},
+  {c:'E',r:['S','T','R','A','N','G','L']},{c:'A',r:['R','T','I','C','L','E','S']},
+];
+
+// ── RNG ────────────────────────────────────────────────────
+function hashStr(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return h>>>0;}
+function mulberry32(seed){return()=>{seed|=0;seed=(seed+0x6D2B79F5)|0;let t=Math.imul(seed^seed>>>15,1|seed);t=(t+Math.imul(t^t>>>7,61|t))^t;return((t^t>>>14)>>>0)/4294967296;};}
+function shuffle(arr,rng){for(let i=arr.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+function buildLetters(roomId){
+  const rng=mulberry32(hashStr(roomId+'_bee2p'));
+  const set=LETTER_SETS[Math.floor(rng()*LETTER_SETS.length)];
+  return{center:set.c,ring:shuffle([...set.r],rng)};
+}
+
+// ── State ──────────────────────────────────────────────────
+let _tIdx=1; // Midnight default
+let _letters=null;
+let _myWords={};
+let _oppCount=0;
+let _hovHex=null;
+let _timerInterval=null;
+let _wordCache={};
+let _validating=false;
+let _wordBuf='';
+let _inputEnabled=false;
+let _cachedNames={p1:'Sapphire',p2:'Ember'};
+let GS=null,myColor=null,myName='',myUid=null,roomId=null,roomRef=null;
+let _oppColor=null;
+let _lastWinner=null;
+let _touchFired=false;
+
+// ── Ring board geometry ────────────────────────────────────
+function getRingParams(cv){
+  const sz=Math.min(cv.width,cv.height);
+  const cx=cv.width/2,cy=cv.height/2;
+  const outerR=sz*.46,innerR=sz*.22,midR=(outerR+innerR)/2;
+  const dotR=sz*.095,centerR=innerR*.88;
+  return{cx,cy,outerR,innerR,midR,dotR,centerR,sz};
+}
+function ringPositions(cv){
+  const p=getRingParams(cv);
+  const pos=[{x:p.cx,y:p.cy}];
+  for(let i=0;i<7;i++){const a=-Math.PI/2+i*(2*Math.PI/7);pos.push({x:p.cx+p.midR*Math.cos(a),y:p.cy+p.midR*Math.sin(a)});}
+  return{pos,params:p};
+}
+function paint(){
+  const cv=document.getElementById('gc');if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const T=THEMES[_tIdx];
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle=T.bg;ctx.fillRect(0,0,cv.width,cv.height);
+  if(!_letters)return;
+  const{pos,params:p}=ringPositions(cv);
+  // Outer ring
+  ctx.beginPath();ctx.arc(p.cx,p.cy,p.outerR,0,Math.PI*2);
+  ctx.fillStyle=T.ringBg;ctx.fill();
+  ctx.strokeStyle=T.ringStroke;ctx.lineWidth=T.ringStrokeW;ctx.stroke();
+  // Punch inner hole
+  ctx.save();ctx.beginPath();ctx.arc(p.cx,p.cy,p.innerR,0,Math.PI*2);ctx.clip();
+  ctx.fillStyle=T.bg;ctx.fillRect(0,0,cv.width,cv.height);ctx.restore();
+  ctx.beginPath();ctx.arc(p.cx,p.cy,p.innerR,0,Math.PI*2);
+  ctx.strokeStyle=T.ringStroke;ctx.lineWidth=T.ringStrokeW;ctx.stroke();
+  // Ring letter dots
+  const fs=Math.round(p.dotR*.72);
+  for(let i=1;i<=7;i++){
+    const pt=pos[i],hov=_hovHex===i;
+    if(hov){ctx.save();ctx.shadowColor='rgba(244,124,0,.45)';ctx.shadowBlur=12;}
+    ctx.beginPath();ctx.arc(pt.x,pt.y,p.dotR,0,Math.PI*2);
+    ctx.fillStyle=hov?T.dotHov:T.dotFill;ctx.fill();
+    ctx.strokeStyle=hov?'rgba(244,124,0,.7)':T.dotStroke;ctx.lineWidth=hov?2:1.5;ctx.stroke();
+    if(hov)ctx.restore();
+    ctx.fillStyle=hov?'#f47c00':T.letterColor;
+    ctx.font=`700 ${fs}px 'Cinzel',serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(_letters.ring[i-1],pt.x,pt.y);
+  }
+  // Center circle
+  const chov=_hovHex===0;
+  if(chov){ctx.save();ctx.shadowColor='rgba(244,124,0,.6)';ctx.shadowBlur=18;}
+  const grd=ctx.createRadialGradient(p.cx-p.centerR*.2,p.cy-p.centerR*.2,p.centerR*.1,p.cx,p.cy,p.centerR);
+  grd.addColorStop(0,chov?'#ffb040':'#ff9020');grd.addColorStop(1,chov?T.centerHov:T.centerFill);
+  ctx.beginPath();ctx.arc(p.cx,p.cy,p.centerR,0,Math.PI*2);
+  ctx.fillStyle=grd;ctx.fill();ctx.strokeStyle=T.centerStroke;ctx.lineWidth=2;ctx.stroke();
+  if(chov)ctx.restore();
+  ctx.fillStyle=T.centerLetterColor;ctx.font=`900 ${Math.round(p.centerR*.62)}px 'Cinzel',serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(_letters.center,p.cx,p.cy);
+}
+function getHexAt(px,py,cv){
+  const{pos,params:p}=ringPositions(cv);
+  if(Math.hypot(px-pos[0].x,py-pos[0].y)<p.centerR)return 0;
+  for(let i=1;i<=7;i++){if(Math.hypot(px-pos[i].x,py-pos[i].y)<p.dotR*1.1)return i;}
+  return null;
+}
+
+// ── Resize canvas ──────────────────────────────────────────
+function resizeCanvas(){
+  const cv=document.getElementById('gc');
+  const col=document.getElementById('center-col');if(!cv)return;
+  const mob=window.innerWidth<=640;
+  let w;
+  if(mob){
+    const maxH=window.innerHeight-260;
+    w=Math.min(window.innerWidth-14,maxH,300);w=Math.max(w,180);
+  } else {
+    const bw=document.querySelector('.board-and-bars')?.clientWidth||500;
+    const avail=bw-96-20;
+    const maxH=window.innerHeight-230;
+    w=Math.min(avail,maxH,400);w=Math.max(w,220);
+  }
+  cv.width=w;cv.height=w;cv.style.width=w+'px';cv.style.height=w+'px';paint();
+}
+
+// ── Canvas events ──────────────────────────────────────────
+function canvasClick(e){
+  if(e.isTrusted!==false&&_touchFired&&e.type==='click')return;
+  if(!GS||GS.winner||_validating)return;
+  const cv=document.getElementById('gc');
+  const rect=cv.getBoundingClientRect();
+  const sx=cv.width/rect.width,sy=cv.height/rect.height;
+  const px=(e.clientX-rect.left)*sx,py=(e.clientY-rect.top)*sy;
+  const hex=getHexAt(px,py,cv);if(hex===null)return;
+  addLetterToInput(hex===0?_letters.center:_letters.ring[hex-1]);
+}
+function canvasHover(e){
+  if(!_letters)return;
+  const cv=document.getElementById('gc');
+  const rect=cv.getBoundingClientRect();
+  const sx=cv.width/rect.width,sy=cv.height/rect.height;
+  const hex=getHexAt((e.clientX-rect.left)*sx,(e.clientY-rect.top)*sy,cv);
+  if(hex!==_hovHex){_hovHex=hex;paint();}
+}
+function canvasLeave(){if(_hovHex!==null){_hovHex=null;paint();}}
+function canvasTouch(e){
+  e.preventDefault();_touchFired=true;
+  canvasClick({clientX:e.touches[0].clientX,clientY:e.touches[0].clientY});
+  setTimeout(()=>{_touchFired=false;},400);
+}
+
+// ── Word input (div-based, no keyboard) ───────────────────
+function renderWordBuf(){
+  const el=document.getElementById('bee-input');if(!el)return;
+  if(!_wordBuf){el.innerHTML='<span class="placeholder">Click letters…</span>';el.classList.remove('has-text');}
+  else{el.innerHTML=_wordBuf+'<span class="cursor"></span>';el.classList.add('has-text');}
+}
+function addLetterToInput(letter){
+  if(!_inputEnabled)return;if(_wordBuf.length>=15)return;
+  _wordBuf+=letter.toUpperCase();renderWordBuf();
+}
+function clearWordBuf(){_wordBuf='';renderWordBuf();}
+function setInputEnabled(on){
+  _inputEnabled=on;
+  const sub=document.getElementById('sub-btn');
+  const clr=document.getElementById('clr-btn');
+  const el=document.getElementById('bee-input');
+  if(sub)sub.disabled=!on;if(clr)clr.disabled=!on;
+  if(el)el.classList.toggle('disabled',!on);
+  if(!on){_wordBuf='';renderWordBuf();}
+}
+
+// ── Dictionary ────────────────────────────────────────────
+async function isValidWord(word){
+  if(_wordCache[word]!==undefined)return _wordCache[word];
+  try{const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);_wordCache[word]=res.ok;return res.ok;}
+  catch{return true;}
+}
+
+// ── Submit word ───────────────────────────────────────────
+async function submitWord(){
+  if(!GS||GS.winner||_validating)return;
+  const word=_wordBuf.toLowerCase().trim();if(!word)return;
+  clearWordBuf();
+  const si=document.getElementById('sel-info');
+  if(word.length<3){showToast('Too short! Min 3 letters.');si.textContent='Min 3 letters.';return;}
+  if(!word.includes(_letters.center.toLowerCase())){showToast(`Must contain "${_letters.center}"!`);si.textContent=`Must include "${_letters.center}"!`;return;}
+  const avail=[_letters.center,..._letters.ring].map(l=>l.toLowerCase());
+  for(const ch of word){if(!avail.includes(ch)){showToast(`"${ch.toUpperCase()}" not in hive!`);si.textContent=`"${ch.toUpperCase()}" not available.`;return;}}
+  if((GS.words?.[myColor]||{})[word]){showToast('Already found!');si.textContent='Already found by you!';return;}
+  _validating=true;setInputEnabled(false);si.textContent='Checking…';
+  const valid=await isValidWord(word);
+  _validating=false;setInputEnabled(!GS?.winner);renderWordBuf();
+  if(valid){
+    update(ref(db),{[`bee2Rooms/${roomId}/words/${myColor}/${word}`]:{word,ts:Date.now()}});
+    si.textContent=`✓ ${word.toUpperCase()}!`;showToast(`✓ ${word.toUpperCase()}!`);
+  } else {
+    showToast(`Not a valid word.`);si.textContent=`"${word.toUpperCase()}" — not valid. Try again!`;
+  }
+}
+
+// ── Timer ─────────────────────────────────────────────────
+function startTimer(startTime){
+  if(_timerInterval)clearInterval(_timerInterval);
+  _timerInterval=setInterval(()=>{
+    const rem=GAME_DURATION-(Date.now()-startTime);
+    const td=document.getElementById('td');
+    if(rem<=0){clearInterval(_timerInterval);_timerInterval=null;if(td)td.textContent='0:00';td?.classList.remove('urgent');if(!GS?.winner)checkTimeUp();return;}
+    const m=Math.floor(rem/60000),s=Math.floor((rem%60000)/1000);
+    if(td){td.textContent=`${m}:${s.toString().padStart(2,'0')}`;if(rem<60000)td.classList.add('urgent');else td.classList.remove('urgent');}
+  },333);
+}
+function checkTimeUp(){
+  if(GS?.winner)return;
+  const c1=Object.keys(GS?.words?.p1||{}).length;
+  const c2=Object.keys(GS?.words?.p2||{}).length;
+  update(roomRef,{winner:c1>c2?'p1':c2>c1?'p2':'draw'});
+}
+
+// ── Progress ──────────────────────────────────────────────
+function updateProgress(){
+  if(!GS)return;
+  const myTotal=Object.keys(_myWords).length;
+  const oppTotal=_oppCount||0;
+  const maxW=Math.max(myTotal,oppTotal,1);
+  const myPct=Math.round(myTotal/maxW*100);
+  const oppPct=Math.round(oppTotal/maxW*100);
+  // Desktop vertical bars
+  const mf=document.getElementById('vbar-fill-'+myColor);
+  const of_=document.getElementById('vbar-fill-'+_oppColor);
+  const mc=document.getElementById('vbar-count-'+myColor);
+  const oc=document.getElementById('vbar-count-'+_oppColor);
+  if(mf)mf.style.height=myPct+'%';if(of_)of_.style.height=oppPct+'%';
+  if(mc)mc.textContent=myTotal;if(oc)oc.textContent=oppTotal;
+  // Mobile horizontal bars
+  const mmf=document.getElementById('mob-fill-'+myColor);
+  const mof=document.getElementById('mob-fill-'+_oppColor);
+  const mmc=document.getElementById('mob-count-'+myColor);
+  const moc=document.getElementById('mob-count-'+_oppColor);
+  if(mmf)mmf.style.width=myPct+'%';if(mof)mof.style.width=oppPct+'%';
+  if(mmc)mmc.textContent=myTotal;if(moc)moc.textContent=oppTotal;
+}
+
+// ── Word log ──────────────────────────────────────────────
+function renderWordLog(){
+  const words=Object.values(_myWords);
+  const sorted=words.sort((a,b)=>a.word.localeCompare(b.word));
+  const pillHTML=sorted.map(w=>`<span class="word-pill ${myColor}">${w.word.toUpperCase()}</span>`).join('');
+  const empty='<span style="font-family:Cinzel,serif;font-size:9px;color:#3a4a60;font-style:italic">No words yet…</span>';
+  const wl=document.getElementById('my-words-list');
+  const mwl=document.getElementById('mob-wf-list');
+  const cnt=document.getElementById('my-words-count');
+  const mcnt=document.getElementById('mob-wf-count');
+  if(wl)wl.innerHTML=pillHTML||empty;
+  if(mwl)mwl.innerHTML=pillHTML||empty;
+  if(cnt)cnt.textContent=sorted.length;
+  if(mcnt)mcnt.textContent=sorted.length;
+}
+
+// ── Players ───────────────────────────────────────────────
+function renderPlayers(players){
+  PLAYERS.forEach(c=>{
+    const p=Object.values(players).find(x=>x.color===c);
+    const name=p?p.name:PM[c].label;
+    _cachedNames[c]=name;
+    // Profile pic border
+    const isMy=c===myColor;
+    const cls=isMy?'me':'opp';
+    const pic=document.getElementById('prof-'+c);
+    const nm=document.getElementById('pname-'+c);
+    if(pic)pic.className='profile-pic '+cls;
+    if(nm){nm.textContent=name;nm.className='profile-name '+cls;}
+    // Vbar name + pic
+    const vn=document.getElementById('vbar-name-'+c);
+    const vp=document.getElementById('vbar-pic-'+c);
+    const mvp=document.getElementById('mob-pic-'+c);
+    if(vn){vn.textContent=name.slice(0,7);vn.className='vbar-name '+cls;}
+    if(vp)vp.className='vbar-pic '+cls;
+    if(mvp)mvp.className='mob-hbar-pic '+cls;
+  });
+}
+
+// ── Snapshot handler ──────────────────────────────────────
+function applySnap(snap){
+  const d=snap.val();if(!d)return;GS=d;
+  _myWords=d.words?.[myColor]||{};
+  _oppCount=Object.keys(d.words?.[_oppColor]||{}).length;
+  updateProgress();renderWordLog();renderPlayers(d.players||{});
+  handleDrawUI(d.drawVotes||{});
+  if(d.startTime&&!_timerInterval&&!d.winner)startTimer(d.startTime);
+  if(d.winner){
+    if(_timerInterval){clearInterval(_timerInterval);_timerInterval=null;}
+    const myC=Object.keys(d.words?.[myColor]||{}).length;
+    const opC=Object.keys(d.words?.[_oppColor]||{}).length;
+    const td=document.getElementById('td');
+    if(td){td.textContent=d.winner==='draw'?'🤝 Draw!':d.winner===myColor?'🏆 You Win!':'💀 You Lose!';td.classList.remove('urgent');}
+    setInputEnabled(false);
+    if(d.winner!==_lastWinner){
+      _lastWinner=d.winner;
+      const title=d.winner==='draw'?'DRAW!':d.winner===myColor?'YOU WIN!':'YOU LOSE!';
+      const sub=d.winner==='draw'?`Both found ${myC} words!`:d.winner===myColor?`You found ${myC} vs their ${opC}!`:`They found ${opC} vs your ${myC}.`;
+      showNotif(title,sub,6000);
+    }
+  } else {
+    if(!_validating)setInputEnabled(true);renderWordBuf();
+    if(d.startTime&&Date.now()-d.startTime>=GAME_DURATION)checkTimeUp();
+  }
+}
+
+// ── Chat ──────────────────────────────────────────────────
+function sendPublic(t){if(!t.trim()||!roomId)return;push(ref(db,`bee2Rooms/${roomId}/chat`),{text:t.trim(),name:myName,color:myColor,ts:Date.now()});}
+function addMsg(c,m,mine){
+  const d=document.createElement('div');d.className=`msg ${mine?'me':'ot'}`;
+  const ac=m.color==='system'?'system':PM[m.color]?.chatClass||m.color;
+  d.innerHTML=`<span class="ma ${ac}">${esc(m.name)}</span><span class="mt">${esc(m.text)}</span>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function syncChat(){
+  onValue(ref(db,`bee2Rooms/${roomId}/chat`),snap=>{
+    const msgs=snap.val()||{};
+    ['pcm','mob-pcm'].forEach(id=>{
+      const el=document.getElementById(id);if(!el)return;
+      el.innerHTML='';
+      Object.values(msgs).sort((a,b)=>a.ts-b.ts).forEach(m=>addMsg(el,m,m.name===myName));
+    });
+  });
+}
+
+// ── Draw vote ─────────────────────────────────────────────
+function handleDrawUI(votes){
+  const ov=document.getElementById('vote-overlay');
+  if(!Object.values(votes).some(v=>v===true)){ov.style.display='none';return;}
+  if(votes[myColor]===true||votes[myColor]===false){ov.style.display='none';}
+  else{ov.style.display='flex';}
+  if(PLAYERS.some(c=>votes[c]===false)){
+    const cl={};PLAYERS.forEach(c=>{cl[`bee2Rooms/${roomId}/drawVotes/${c}`]=null;});
+    update(ref(db),cl);ov.style.display='none';showToast('Draw declined.');return;
+  }
+  if(PLAYERS.every(c=>votes[c]===true)){update(roomRef,{winner:'draw'});ov.style.display='none';}
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function showNotif(title,sub,dur=2800){
+  const n=document.getElementById('board-notif');
+  document.getElementById('bn-title').textContent=title;
+  document.getElementById('bn-sub').textContent=sub;
+  n.classList.add('show');setTimeout(()=>n.classList.remove('show'),dur);
+}
+function showToast(msg,dur=2400){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── Start game ────────────────────────────────────────────
+function startGame(rid){
+  roomId=rid;roomRef=ref(db,`bee2Rooms/${roomId}`);
+  _letters=buildLetters(roomId);
+  document.getElementById('ls').classList.remove('active');
+  document.getElementById('gs').classList.add('active');
+  document.getElementById('rs').textContent=roomId;
+  // Apply profile borders immediately
+  PLAYERS.forEach(c=>{
+    const cls=c===myColor?'me':'opp';
+    const pic=document.getElementById('prof-'+c);
+    const nm=document.getElementById('pname-'+c);
+    if(pic)pic.className='profile-pic '+cls;
+    if(nm)nm.className='profile-name '+cls;
+    const vp=document.getElementById('vbar-pic-'+c);
+    const vn=document.getElementById('vbar-name-'+c);
+    if(vp)vp.className='vbar-pic '+cls;
+    if(vn)vn.className='vbar-name '+cls;
+    const mvp=document.getElementById('mob-pic-'+c);
+    if(mvp)mvp.className='mob-hbar-pic '+cls;
+  });
+  resizeCanvas();window.addEventListener('resize',resizeCanvas);paint();
+  onValue(roomRef,applySnap);syncChat();
+  // Canvas events
+  const cv=document.getElementById('gc');
+  cv.addEventListener('click',canvasClick);
+  cv.addEventListener('mousemove',canvasHover);
+  cv.addEventListener('mouseleave',canvasLeave);
+  cv.addEventListener('touchstart',canvasTouch,{passive:false});
+  // Word input
+  document.addEventListener('keydown',e=>{
+    if(!_inputEnabled||!_letters||GS?.winner)return;
+    if(e.key==='Enter'){e.preventDefault();submitWord();return;}
+    if(e.key==='Backspace'||e.key==='Delete'){e.preventDefault();_wordBuf=_wordBuf.slice(0,-1);renderWordBuf();return;}
+    if(e.key==='Escape'){clearWordBuf();return;}
+    const ch=e.key.toUpperCase();
+    if(/^[A-Z]$/.test(ch)){const avail=[_letters.center,..._letters.ring].map(l=>l.toUpperCase());if(avail.includes(ch))addLetterToInput(ch);}
+  });
+  document.getElementById('sub-btn').addEventListener('click',submitWord);
+  document.getElementById('clr-btn').addEventListener('click',clearWordBuf);
+  document.getElementById('shufflebtn').addEventListener('click',()=>{
+    _letters={..._letters,ring:shuffle([..._letters.ring],()=>Math.random())};paint();showToast('Ring shuffled!');
+  });
+  document.getElementById('themebtn').addEventListener('click',()=>{
+    _tIdx=(_tIdx+1)%THEMES.length;paint();showToast('Theme: '+THEMES[_tIdx].name);
+  });
+  document.getElementById('resbtn').addEventListener('click',()=>{
+    if(!roomId||GS?.winner)return;
+    if(!confirm('Resign?'))return;
+    update(roomRef,{winner:_oppColor});
+    push(ref(db,`bee2Rooms/${roomId}/chat`),{text:`${PM[myColor].label} (${myName}) resigned.`,name:'System',color:'system',ts:Date.now()});
+    setInputEnabled(false);
+  });
+  document.getElementById('drawbtn').addEventListener('click',()=>{
+    if(GS?.winner)return;
+    update(ref(db,`bee2Rooms/${roomId}/drawVotes`),{[myColor]:true});showToast('Draw proposed…');
+  });
+  document.getElementById('vote-yes').addEventListener('click',()=>{
+    update(ref(db,`bee2Rooms/${roomId}/drawVotes`),{[myColor]:true});
+    document.getElementById('vote-overlay').style.display='none';
+  });
+  document.getElementById('vote-no').addEventListener('click',()=>{
+    update(ref(db,`bee2Rooms/${roomId}/drawVotes`),{[myColor]:false});
+    document.getElementById('vote-overlay').style.display='none';
+  });
+  // Desktop chat
+  const sp=()=>{const i=document.getElementById('pci');sendPublic(i.value);i.value='';};
+  document.getElementById('psb').addEventListener('click',sp);
+  document.getElementById('pci').addEventListener('keydown',e=>{if(e.key==='Enter')sp();});
+  // Desktop chat tab
+  document.querySelectorAll('.chat-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      document.querySelectorAll('.chat-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.chat-panel').forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('chat-'+tab.dataset.panel)?.classList.add('active');
+    });
+  });
+  // Mobile chat overlay
+  if(window.innerWidth<=640){
+    const chatOverlay=document.getElementById('mob-chat-overlay');
+    const chatBtn=document.getElementById('mob-chat-btn');
+    const toggleChat=()=>{
+      if(!chatOverlay)return;
+      const isOpen=chatOverlay.classList.contains('open');
+      if(isOpen){chatOverlay.classList.remove('open');setTimeout(()=>{if(!chatOverlay.classList.contains('open'))chatOverlay.style.display='none';},300);}
+      else{chatOverlay.style.display='flex';requestAnimationFrame(()=>requestAnimationFrame(()=>chatOverlay.classList.add('open')));}
+    };
+    chatBtn?.addEventListener('click',toggleChat);
+    document.getElementById('mob-chat-handle')?.addEventListener('click',toggleChat);
+    document.querySelectorAll('.mob-chat-tab').forEach(tab=>{
+      tab.addEventListener('click',()=>{
+        document.querySelectorAll('.mob-chat-tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.mob-chat-panel').forEach(p=>p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('mob-c'+tab.dataset.panel)?.classList.add('active');
+      });
+    });
+    // Mobile public chat send
+    const spm=()=>{const i=document.getElementById('mob-pci');sendPublic(i.value);i.value='';};
+    document.getElementById('mob-psb')?.addEventListener('click',spm);
+    document.getElementById('mob-pci')?.addEventListener('keydown',e=>{if(e.key==='Enter')spm();});
+  }
+  push(ref(db,`bee2Rooms/${roomId}/chat`),{text:`${PM[myColor].label} (${myName}) joined!`,name:'System',color:'system',ts:Date.now()});
+  setInputEnabled(true);renderWordBuf();
+}
+
+// ── Join / create room ─────────────────────────────────────
+async function joinRoom(){
+  const name=document.getElementById('ni').value.trim();
+  const rid=document.getElementById('ri').value.trim().toUpperCase();
+  if(!name){document.getElementById('stat').textContent='Enter your name!';return;}
+  if(!myColor){document.getElementById('stat').textContent='Choose a colour!';return;}
+  myName=name;myUid='u'+Date.now()+Math.random().toString(36).slice(2,6);
+  _oppColor=myColor==='p1'?'p2':'p1';
+  document.getElementById('stat').textContent='Connecting…';
+  try{
+    let fid=rid;
+    if(!rid){
+      fid='D'+Math.random().toString(36).slice(2,7).toUpperCase();
+      await set(ref(db,`bee2Rooms/${fid}`),{
+        created:Date.now(),startTime:Date.now(),players:{},
+        words:{p1:{},p2:{}},winner:null,drawVotes:{}
+      });
+    } else {
+      const chk=await get(ref(db,`bee2Rooms/${fid}`));
+      if(!chk.exists()){document.getElementById('stat').textContent='Room not found!';return;}
+    }
+    const ps=await get(ref(db,`bee2Rooms/${fid}/players`));
+    if(Object.values(ps.val()||{}).some(p=>p.color===myColor)){document.getElementById('stat').textContent='Colour taken!';return;}
+    await set(ref(db,`bee2Rooms/${fid}/players/${myUid}`),{name,color:myColor,online:true});
+    onDisconnect(ref(db,`bee2Rooms/${fid}/players/${myUid}/online`)).set(false);
+    startGame(fid);
+  }catch(err){document.getElementById('stat').textContent='Error: '+err.message;}
+}
+
+// ── Init ──────────────────────────────────────────────────
+document.querySelectorAll('.cc').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.cc').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');myColor=el.dataset.color;_oppColor=myColor==='p1'?'p2':'p1';
+  });
+});
+document.getElementById('jb').addEventListener('click',joinRoom);
+document.getElementById('ni').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom();});
+document.getElementById('ri').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom();});
+paint();
+</script>
+</body>
+</html>
