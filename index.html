@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Strategy Hub — 1v1 Spelling Bee</title>
+<title>LexArena — 1v1</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -53,11 +53,11 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
 .pcard{display:flex;flex-direction:column;align-items:center;gap:3px}
 .profile-pic{width:44px;height:44px;border-radius:50%;border:2.5px solid rgba(255,255,255,.15);background:rgba(20,30,60,.6);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;transition:border-color .3s,box-shadow .3s}
 .profile-pic img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.profile-pic.me{border-color:#22c55e;box-shadow:0 0 10px rgba(34,197,94,.4)}
-.profile-pic.opp{border-color:#ef4444;box-shadow:0 0 10px rgba(239,68,68,.3)}
+.profile-pic.p1{border-color:#3b82f6;box-shadow:0 0 10px rgba(59,130,246,.45)}
+.profile-pic.p2{border-color:#f97316;box-shadow:0 0 10px rgba(249,115,22,.4)}
 .profile-name{font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:#c0c8d8;letter-spacing:.05em;white-space:nowrap;max-width:70px;overflow:hidden;text-overflow:ellipsis;text-align:center}
-.profile-name.me{color:#22c55e}
-.profile-name.opp{color:#ef4444}
+.profile-name.p1{color:#3b82f6}
+.profile-name.p2{color:#f97316}
 .profile-center{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
 #td{font-family:'Cinzel',serif;font-size:24px;font-weight:900;letter-spacing:.18em;color:#ffe680;text-align:center;text-shadow:0 0 20px rgba(255,200,0,.3)}
 #td.urgent{color:#e74c3c;animation:pulse-t .6s ease-in-out infinite}
@@ -79,16 +79,16 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
 /* Vertical bar (one per player) */
 .vbar-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;width:40px;flex-shrink:0;padding:4px 0}
 .vbar-pic{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.15);background:rgba(20,30,60,.6);display:flex;align-items:center;justify-content:center;font-size:12px;overflow:hidden}
-.vbar-pic.me{border-color:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.4)}
-.vbar-pic.opp{border-color:#ef4444;box-shadow:0 0 6px rgba(239,68,68,.35)}
+.vbar-pic.p1{border-color:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.4)}
+.vbar-pic.p2{border-color:#f97316;box-shadow:0 0 6px rgba(249,115,22,.35)}
 .vbar-count{font-family:'Cinzel',serif;font-size:14px;font-weight:900;min-height:18px;text-align:center}
-.vbar-count.me{color:#22c55e}.vbar-count.opp{color:#ef4444}
+.vbar-count.p1{color:#3b82f6}.vbar-count.p2{color:#f97316}
 .vbar-track{flex:1;width:14px;background:rgba(255,255,255,.07);border-radius:7px;overflow:hidden;position:relative;min-height:80px}
 .vbar-fill{position:absolute;bottom:0;left:0;right:0;border-radius:7px;transition:height .6s cubic-bezier(.4,0,.2,1)}
-.vbar-fill.me{background:linear-gradient(to top,#15803d,#22c55e)}
-.vbar-fill.opp{background:linear-gradient(to top,#b91c1c,#ef4444)}
+.vbar-fill.p1{background:linear-gradient(to top,#1d4ed8,#3b82f6)}
+.vbar-fill.p2{background:linear-gradient(to top,#c2410c,#f97316)}
 .vbar-name{font-family:'Cinzel',serif;font-size:8px;font-weight:700;letter-spacing:.06em;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40px}
-.vbar-name.me{color:#22c55e}.vbar-name.opp{color:#ef4444}
+.vbar-name.p1{color:#3b82f6}.vbar-name.p2{color:#f97316}
 
 /* Word input */
 .game-bottom{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;padding:0 4px 4px}
@@ -187,14 +187,14 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
   .mob-hbar-team{display:flex;align-items:center;gap:5px;flex:1}
   .mob-hbar-team.opp{flex-direction:row-reverse}
   .mob-hbar-pic{width:22px;height:22px;border-radius:50%;border:1.5px solid;display:flex;align-items:center;justify-content:center;font-size:10px;overflow:hidden;background:rgba(20,30,60,.7)}
-  .mob-hbar-pic.me{border-color:#22c55e}
-  .mob-hbar-pic.opp{border-color:#ef4444}
+  .mob-hbar-pic.p1{border-color:#3b82f6}
+  .mob-hbar-pic.p2{border-color:#f97316}
   .mob-hbar-track{flex:1;height:9px;background:rgba(255,255,255,.07);border-radius:5px;overflow:hidden;position:relative}
   .mob-hbar-fill{position:absolute;top:0;bottom:0;border-radius:5px;transition:width .6s ease}
-  .mob-hbar-fill.me{left:0;background:linear-gradient(90deg,#15803d,#22c55e)}
-  .mob-hbar-fill.opp{right:0;background:linear-gradient(90deg,#ef4444,#b91c1c)}
+  .mob-hbar-fill.p1{left:0;background:linear-gradient(90deg,#1d4ed8,#3b82f6)}
+  .mob-hbar-fill.p2{right:0;background:linear-gradient(90deg,#f97316,#c2410c)}
   .mob-hbar-count{font-family:'Cinzel',serif;font-size:12px;font-weight:900;min-width:20px;text-align:center}
-  .mob-hbar-count.me{color:#22c55e}.mob-hbar-count.opp{color:#ef4444}
+  .mob-hbar-count.p1{color:#3b82f6}.mob-hbar-count.p2{color:#f97316}
   .mob-hbar-vs{font-family:'Cinzel',serif;font-size:10px;color:#3a4a60;font-weight:700}
   /* Row 3: board */
   .board-and-bars{display:flex!important;align-items:center!important;justify-content:center!important;padding:4px!important;overflow:hidden!important;min-height:0!important}
@@ -246,7 +246,7 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
     <div>
       <div class="crown">🐝</div>
       <h1 class="gtitle">STRATEGY HUB</h1>
-      <p class="gsub">1v1 Spelling Bee &middot; 8 Minutes &middot; One Hive</p>
+      <p class="gsub">LexArena &middot; 1v1 &middot; 8 Minutes</p>
     </div>
     <div class="lcard">
       <input type="text" id="ni" placeholder="Your name…" maxlength="20"/>
@@ -281,7 +281,7 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
       <!-- Profile row: P1 left | timer center | P2 right -->
       <div class="profile-row">
         <div class="pcard">
-          <div class="profile-pic" id="prof-p1">👤</div>
+          <div class="profile-pic p1" id="prof-p1">👤</div>
           <span class="profile-name" id="pname-p1">Sapphire</span>
         </div>
 
@@ -297,7 +297,7 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
         </div>
 
         <div class="pcard">
-          <div class="profile-pic" id="prof-p2">👤</div>
+          <div class="profile-pic p1" id="prof-p2">👤</div>
           <span class="profile-name" id="pname-p2">Ember</span>
         </div>
       </div>
@@ -305,14 +305,14 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
       <!-- Mobile row 2: horizontal score bars -->
       <div id="mob-hbars">
         <div class="mob-hbar-team">
-          <div class="mob-hbar-pic me" id="mob-pic-p1">👤</div>
-          <div class="mob-hbar-track"><div class="mob-hbar-fill me" id="mob-fill-p1" style="width:0%"></div></div>
+          <div class="mob-hbar-pic p1" id="mob-pic-p1">👤</div>
+          <div class="mob-hbar-track"><div class="mob-hbar-fill p1" id="mob-fill-p1" style="width:0%"></div></div>
           <div class="mob-hbar-count me" id="mob-count-p1">0</div>
         </div>
         <div class="mob-hbar-vs">VS</div>
         <div class="mob-hbar-team opp">
-          <div class="mob-hbar-pic opp" id="mob-pic-p2">👤</div>
-          <div class="mob-hbar-track"><div class="mob-hbar-fill opp" id="mob-fill-p2" style="width:0%"></div></div>
+          <div class="mob-hbar-pic p2" id="mob-pic-p2">👤</div>
+          <div class="mob-hbar-track"><div class="mob-hbar-fill p2" id="mob-fill-p2" style="width:0%"></div></div>
           <div class="mob-hbar-count opp" id="mob-count-p2">0</div>
         </div>
       </div>
@@ -321,10 +321,10 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
       <div class="board-and-bars">
         <!-- P1 bar -->
         <div class="vbar-wrap" id="vbar-p1">
-          <div class="vbar-pic me" id="vbar-pic-p1">👤</div>
-          <div class="vbar-count me" id="vbar-count-p1">0</div>
-          <div class="vbar-track"><div class="vbar-fill me" id="vbar-fill-p1" style="height:0%"></div></div>
-          <div class="vbar-name me" id="vbar-name-p1">You</div>
+          <div class="vbar-pic p1" id="vbar-pic-p1">👤</div>
+          <div class="vbar-count p1" id="vbar-count-p1">0</div>
+          <div class="vbar-track"><div class="vbar-fill p1" id="vbar-fill-p1" style="height:0%"></div></div>
+          <div class="vbar-name p1" id="vbar-name-p1">You</div>
         </div>
 
         <!-- Ring board -->
@@ -335,10 +335,10 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
 
         <!-- P2 bar -->
         <div class="vbar-wrap" id="vbar-p2">
-          <div class="vbar-pic opp" id="vbar-pic-p2">👤</div>
-          <div class="vbar-count opp" id="vbar-count-p2">0</div>
-          <div class="vbar-track"><div class="vbar-fill opp" id="vbar-fill-p2" style="height:0%"></div></div>
-          <div class="vbar-name opp" id="vbar-name-p2">Opp</div>
+          <div class="vbar-pic p2" id="vbar-pic-p2">👤</div>
+          <div class="vbar-count p2" id="vbar-count-p2">0</div>
+          <div class="vbar-track"><div class="vbar-fill p2" id="vbar-fill-p2" style="height:0%"></div></div>
+          <div class="vbar-name p2" id="vbar-name-p2">Opp</div>
         </div>
       </div>
 
@@ -731,20 +731,17 @@ function renderPlayers(players){
     const p=Object.values(players).find(x=>x.color===c);
     const name=p?p.name:PM[c].label;
     _cachedNames[c]=name;
-    // Profile pic border
-    const isMy=c===myColor;
-    const cls=isMy?'me':'opp';
+    // Always use p1/p2 classes — blue for p1, orange for p2
     const pic=document.getElementById('prof-'+c);
     const nm=document.getElementById('pname-'+c);
-    if(pic)pic.className='profile-pic '+cls;
-    if(nm){nm.textContent=name;nm.className='profile-name '+cls;}
-    // Vbar name + pic
+    if(pic)pic.className='profile-pic '+c;
+    if(nm){nm.textContent=name;nm.className='profile-name '+c;}
     const vn=document.getElementById('vbar-name-'+c);
     const vp=document.getElementById('vbar-pic-'+c);
     const mvp=document.getElementById('mob-pic-'+c);
-    if(vn){vn.textContent=name.slice(0,7);vn.className='vbar-name '+cls;}
-    if(vp)vp.className='vbar-pic '+cls;
-    if(mvp)mvp.className='mob-hbar-pic '+cls;
+    if(vn){vn.textContent=name.slice(0,7);vn.className='vbar-name '+c;}
+    if(vp)vp.className='vbar-pic '+c;
+    if(mvp)mvp.className='mob-hbar-pic '+c;
   });
 }
 
@@ -827,19 +824,18 @@ function startGame(rid){
   document.getElementById('ls').classList.remove('active');
   document.getElementById('gs').classList.add('active');
   document.getElementById('rs').textContent=roomId;
-  // Apply profile borders immediately
+  // Apply p1=blue, p2=orange borders immediately
   PLAYERS.forEach(c=>{
-    const cls=c===myColor?'me':'opp';
     const pic=document.getElementById('prof-'+c);
     const nm=document.getElementById('pname-'+c);
-    if(pic)pic.className='profile-pic '+cls;
-    if(nm)nm.className='profile-name '+cls;
+    if(pic)pic.className='profile-pic '+c;
+    if(nm)nm.className='profile-name '+c;
     const vp=document.getElementById('vbar-pic-'+c);
     const vn=document.getElementById('vbar-name-'+c);
-    if(vp)vp.className='vbar-pic '+cls;
-    if(vn)vn.className='vbar-name '+cls;
+    if(vp)vp.className='vbar-pic '+c;
+    if(vn)vn.className='vbar-name '+c;
     const mvp=document.getElementById('mob-pic-'+c);
-    if(mvp)mvp.className='mob-hbar-pic '+cls;
+    if(mvp)mvp.className='mob-hbar-pic '+c;
   });
   resizeCanvas();window.addEventListener('resize',resizeCanvas);paint();
   onValue(roomRef,applySnap);syncChat();
