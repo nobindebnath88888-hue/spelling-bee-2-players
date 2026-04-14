@@ -244,8 +244,39 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
 <div id="ls" class="screen active">
   <div class="lw">
     <div>
-      <div class="crown">🐝</div>
-      <h1 class="gtitle">STRATEGY HUB</h1>
+      <!-- LexArena SVG logo -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg"
+          style="filter:drop-shadow(0 0 14px rgba(212,160,23,.55));animation:fl 3s ease-in-out infinite">
+          <!-- Outer ring -->
+          <circle cx="36" cy="36" r="33" stroke="url(#rg)" stroke-width="2.5" fill="none"/>
+          <!-- Inner ring -->
+          <circle cx="36" cy="36" r="22" stroke="url(#rg)" stroke-width="1.5" fill="none" opacity=".5"/>
+          <!-- Center hex / letter gem -->
+          <polygon points="36,18 50,26 50,46 36,54 22,46 22,26"
+            fill="url(#cg)" opacity=".92"/>
+
+          <!-- Orbit dots -->
+          <circle cx="36" cy="4"  r="2.5" fill="url(#rg)"/>
+          <circle cx="63" cy="19" r="2"   fill="url(#rg)" opacity=".7"/>
+          <circle cx="63" cy="53" r="2"   fill="url(#rg)" opacity=".7"/>
+          <circle cx="36" cy="68" r="2.5" fill="url(#rg)"/>
+          <circle cx="9"  cy="53" r="2"   fill="url(#rg)" opacity=".7"/>
+          <circle cx="9"  cy="19" r="2"   fill="url(#rg)" opacity=".7"/>
+          <defs>
+            <linearGradient id="rg" x1="0" y1="0" x2="72" y2="72" gradientUnits="userSpaceOnUse">
+              <stop offset="0%"   stop-color="#b8860b"/>
+              <stop offset="50%"  stop-color="#ffe680"/>
+              <stop offset="100%" stop-color="#b8860b"/>
+            </linearGradient>
+            <linearGradient id="cg" x1="22" y1="18" x2="50" y2="54" gradientUnits="userSpaceOnUse">
+              <stop offset="0%"   stop-color="#f0c040"/>
+              <stop offset="100%" stop-color="#b8860b"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <h1 class="gtitle">LEX ARENA</h1>
+      </div>
       <p class="gsub">LexArena &middot; 1v1 &middot; 8 Minutes</p>
     </div>
     <div class="lcard">
@@ -355,7 +386,7 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
       <!-- Mobile row 5: words found -->
       <div id="mob-words-found">
         <div class="stl" style="margin-bottom:4px">
-          🐝 My Words
+          My Words
           <span id="mob-wf-count" style="background:rgba(180,140,50,.18);border-radius:100px;padding:1px 6px;color:#d4a017;font-size:9px">0</span>
           <span style="flex:1"></span>
           <button id="mob-chat-btn">💬</button>
