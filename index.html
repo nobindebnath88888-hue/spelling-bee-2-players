@@ -132,6 +132,9 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
 .words-section::-webkit-scrollbar{width:3px}.words-section::-webkit-scrollbar-thumb{background:#1e3a6e;border-radius:2px}
 .stl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.13em;color:#506080;text-transform:uppercase;display:flex;align-items:center;gap:6px;margin-bottom:5px}
 .word-pill{font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:100px;white-space:nowrap}
+.dlbtn{background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:1px solid #60a5fa;border-radius:7px;color:#fff;font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px 12px;cursor:pointer;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.dlbtn:hover{background:linear-gradient(135deg,#2563eb,#60a5fa);box-shadow:0 0 14px rgba(59,130,246,.45);transform:translateY(-1px)}
+.dlbtn:disabled{opacity:.4;cursor:default;transform:none}
 .word-pill.p1{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.35);color:#93c5fd}
 .word-pill.p2{background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.35);color:#fdba74}
 
@@ -236,6 +239,7 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
   #mob-chat-overlay{display:none!important}
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -417,9 +421,11 @@ input[type=text]:focus{border-color:#b8860b;box-shadow:0 0 10px rgba(180,140,50,
       </div>
       <!-- Words found -->
       <div class="words-section">
-        <div class="stl">
+        <div class="stl" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           My Words
           <span id="my-words-count" style="background:rgba(180,140,50,.18);border-radius:100px;padding:1px 6px;color:#d4a017;font-size:9px">0</span>
+          <span style="flex:1"></span>
+          <button class="dlbtn" id="dl-btn" disabled>⬇ PDF</button>
         </div>
         <div id="my-words-list" style="display:flex;flex-wrap:wrap;gap:3px;padding-top:4px"></div>
       </div>
@@ -796,6 +802,8 @@ function applySnap(snap){
       const title=d.winner==='draw'?'DRAW!':d.winner===myColor?'YOU WIN!':'YOU LOSE!';
       const sub=d.winner==='draw'?`Both found ${myC} words!`:d.winner===myColor?`You found ${myC} vs their ${opC}!`:`They found ${opC} vs your ${myC}.`;
       showNotif(title,sub,6000);
+      const dlBtn=document.getElementById('dl-btn');
+      if(dlBtn)dlBtn.disabled=false;
     }
   } else {
     if(!_validating)setInputEnabled(true);renderWordBuf();
@@ -991,9 +999,109 @@ document.querySelectorAll('.cc').forEach(el=>{
   });
 });
 document.getElementById('jb').addEventListener('click',joinRoom);
+document.getElementById('dl-btn')?.addEventListener('click',downloadPDF);
 document.getElementById('ni').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom();});
 document.getElementById('ri').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom();});
 paint();
+
+// ── PDF Generation ─────────────────────────────────────────
+function downloadPDF(){
+  if(typeof window.jspdf==='undefined'){showToast('PDF library not loaded yet.');return;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,H=297,margin=18;
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+
+  // Background
+  doc.setFillColor(6,12,26);doc.rect(0,0,W,H,'F');
+
+  // Watermark helper
+  function drawWatermark(x,y,sz,alpha){
+    doc.saveGraphicsState();
+    doc.setGState(new doc.GState({opacity:alpha}));
+    doc.setDrawColor(249,115,22);doc.setLineWidth(sz*0.09);
+    doc.ellipse(x-sz*0.28,y,sz*0.28,sz*0.18,'S');
+    doc.setDrawColor(59,130,246);
+    doc.ellipse(x+sz*0.28,y,sz*0.28,sz*0.18,'S');
+    doc.setDrawColor(200,160,60);doc.setLineWidth(sz*0.05);
+    doc.line(x-sz*0.05,y-sz*0.04,x+sz*0.05,y+sz*0.04);
+    doc.setFont('helvetica','bold');doc.setFontSize(sz*1.1);
+    doc.setTextColor(180,140,50);
+    doc.text("Porimol's",x,y+sz*0.42,{align:'center'});
+    doc.restoreGraphicsState();
+  }
+
+  // Tiled background watermarks
+  for(let wy=40;wy<H;wy+=80)for(let wx=30;wx<W;wx+=90)drawWatermark(wx,wy,14,0.06);
+
+  // Border
+  doc.setDrawColor(180,140,50);doc.setLineWidth(0.6);
+  doc.rect(10,10,W-20,H-20,'S');
+  doc.setLineWidth(0.2);doc.rect(12,12,W-24,H-24,'S');
+
+  // Header
+  drawWatermark(margin+8,26,7,0.9);
+  doc.setFont('helvetica','bold');doc.setFontSize(22);doc.setTextColor(255,230,128);
+  doc.text('LEX ARENA',margin+22,23);
+  doc.setFontSize(9);doc.setTextColor(144,128,80);
+  doc.text('1v1 BATTLE · Word Report',margin+22,29);
+  doc.setFontSize(8);doc.setTextColor(100,110,130);
+  doc.text(`${dateStr}  ·  Room: ${roomId||'—'}`,W-margin,23,{align:'right'});
+  doc.text(`Letters: ${_letters?[_letters.center,..._letters.ring].join(' · '):'—'}`,W-margin,29,{align:'right'});
+  doc.setDrawColor(180,140,50);doc.setLineWidth(0.4);doc.line(margin,33,W-margin,33);
+
+  let y=42;
+
+  function drawSection(label,isMe,words){
+    if(y>H-50){doc.addPage();y=20;doc.setFillColor(6,12,26);doc.rect(0,0,W,H,'F');}
+    const barColor=isMe?[29,78,216]:[194,65,12];
+    doc.setFillColor(...barColor);
+    doc.roundedRect(margin,y-4,W-margin*2,9,1.5,1.5,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(255,255,255);
+    doc.text(label,margin+4,y+2.5);
+    doc.setFontSize(8);
+    doc.text(`${words.length} word${words.length!==1?'s':''}`,W-margin-4,y+2.5,{align:'right'});
+    y+=13;
+    if(words.length===0){
+      doc.setFont('helvetica','italic');doc.setFontSize(9);doc.setTextColor(80,90,100);
+      doc.text('No words found.',margin+4,y);y+=10;return;
+    }
+    const pillW=28,pillH=6,pillGap=3;
+    let px=margin,py=y;
+    words.sort((a,b)=>a.localeCompare(b)).forEach(word=>{
+      if(px+pillW>W-margin){px=margin;py+=pillH+pillGap;}
+      if(py>H-25){doc.addPage();py=20;px=margin;doc.setFillColor(6,12,26);doc.rect(0,0,W,H,'F');}
+      doc.setFillColor(isMe?20:40,isMe?40:20,isMe?80:50);
+      doc.setDrawColor(isMe?59:249,isMe?130:115,isMe?246:22);doc.setLineWidth(0.3);
+      doc.roundedRect(px,py-4.5,pillW,pillH,1.2,1.2,'FD');
+      doc.setFont('helvetica','bold');doc.setFontSize(6.5);
+      doc.setTextColor(isMe?147:253,isMe?197:186,isMe?253:116);
+      doc.text(word.toUpperCase(),px+pillW/2,py-0.5,{align:'center'});
+      px+=pillW+pillGap;
+    });
+    y=py+pillH+6;
+  }
+
+  // My words
+  const myWordList=Object.values(GS?.words?.[myColor]||{}).map(w=>w.word).filter(Boolean);
+  const oppWordList=Object.values(GS?.words?.[_oppColor]||{}).map(w=>w.word).filter(Boolean);
+  drawSection(`⬡ YOU — ${PM[myColor].label} (${_cachedNames[myColor]||myName})`,true,myWordList);
+  y+=4;
+  drawSection(`⬡ OPPONENT — ${PM[_oppColor].label} (${_cachedNames[_oppColor]||'?'})`,false,oppWordList);
+
+  // Footer
+  const footerY=H-14;
+  doc.setDrawColor(180,140,50);doc.setLineWidth(0.3);doc.line(margin,footerY-4,W-margin,footerY-4);
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(80,90,110);
+  doc.text('Generated by LexArena · lexarena.app',margin,footerY);
+  drawWatermark(W/2,footerY-1,5,0.5);
+  doc.text("© Porimol's",W-margin,footerY,{align:'right'});
+
+  doc.save(`LexArena_1v1_${roomId||'game'}_${now.toISOString().slice(0,10)}.pdf`);
+  showToast('PDF downloaded!');
+}
+
 </script>
 </body>
 </html>
